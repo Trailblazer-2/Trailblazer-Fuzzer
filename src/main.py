@@ -308,47 +308,78 @@ class KernelProtectionAnalyzer:
         return protections
 
     def _check_sip(self) -> str:
+       
         try:
+       
             result = subprocess.run(['csrutil', 'status'], capture_output=True, text=True)
             output = result.stdout
+       
             if "System Integrity Protection status: enabled" in output:
+       
                 return '✅ Enabled'
+       
             elif "System Integrity Protection status: disabled" in output:
+       
                 return '❌ Disabled'
+       
             return '❓ Unknown'
+       
         except FileNotFoundError:
+       
             return '❌ csrutil not found'
+       
         except Exception as e:
+       
             return f'❓ Error: {e}'
 
     def _check_ssv(self) -> str:
+       
         try:
+       
             result = subprocess.run(['diskutil', 'apfs', 'list'], capture_output=True, text=True)
+       
             if "Snapshot" in result.stdout and "Sealed" in result.stdout:
+       
                 return '✅ Enabled (Sealed SSV)'
+       
             return '⚠️  Not detected or not an APFS volume'
+       
         except FileNotFoundError:
+       
             return '❌ diskutil not found'
+       
         except Exception:
+       
             return '❓ Unknown'
 
     def _check_kip_via_sip(self) -> str:
+       
         return '✅ Enforced by SIP & SSV'
 
     def _check_ktpr_via_ssv(self) -> str:
+       
         return '✅ Enforced by Signed System Volume'
 
     def _check_kaslr_macos(self) -> str:
+       
         try:
+       
             result = subprocess.run(['sysctl', 'vm.kernel_slide'], capture_output=True, text=True)
+       
             slide = int(result.stdout.strip().split()[-1])
+       
             if slide > 0:
+       
                 return f'✅ Enabled (slide=0x{slide:x})'
+       
             return '❌ Disabled'
+       
         except Exception:
+       
             return '❓ Unknown'
 
     def _check_tcc_info(self) -> str:
+       
         return 'ℹ️  Informational: User-space privacy framework. Check System Settings > Privacy & Security.'
     
     def check_linux_kernel_protections(self) -> Dict:
@@ -411,42 +442,67 @@ class KernelProtectionAnalyzer:
             return '❓ Unknown'
     
     def _check_smep(self) -> str:
+        
         cpuinfo_path = '/proc/cpuinfo'
+        
         sysctl_cmd = ['sysctl', 'machdep.cpu.features']
         
         try:
+        
             # Linux
             if os.path.exists(cpuinfo_path):
+        
                 with open(cpuinfo_path, 'r') as f:
+        
                     if 'smep' in f.read():
+        
                         return '✅ Supported by CPU'
+        
             # macOS
             else:
+        
                 result = subprocess.run(sysctl_cmd, capture_output=True, text=True)
+        
                 if 'SMEP' in result.stdout:
+        
                     return '✅ Supported by CPU'
 
             return '❌ Not supported'
+        
         except:
+        
             return '❓ Unknown'
     
     def _check_smap(self) -> str:
+        
         cpuinfo_path = '/proc/cpuinfo'
+        
         sysctl_cmd = ['sysctl', 'machdep.cpu.features']
 
         try:
+        
             # Linux
             if os.path.exists(cpuinfo_path):
+        
                 with open(cpuinfo_path, 'r') as f:
+        
                     if 'smap' in f.read():
+        
                         return '✅ Supported by CPU'
+        
             # macOS
             else:
+        
                 result = subprocess.run(sysctl_cmd, capture_output=True, text=True)
+        
                 if 'SMAP' in result.stdout:
+        
                     return '✅ Supported by CPU'
+        
             return '❌ Not supported'
+        
         except:
+        
             return '❓ Unknown'
     
     def _check_kpti(self) -> str:
@@ -1114,27 +1170,35 @@ class TrailblazerSystem:
         # --- psutil 기반 실시간 시스템 정보 ---
         print(f"\n{Colors.OKCYAN}Live System Metrics (via psutil):{Colors.ENDC}")
         try:
+            
             # CPU
             cpu_percent = psutil.cpu_percent(interval=1)
+            
             print(f"  CPU Usage: {cpu_percent}%")
             
             # Memory
             mem = psutil.virtual_memory()
+            
             mem_total_gb = round(mem.total / (1024**3), 2)
             mem_used_gb = round(mem.used / (1024**3), 2)
+            
             print(f"  Memory Usage: {mem.percent}% ({mem_used_gb}GB / {mem_total_gb}GB)")
 
             # Disk
             disk = psutil.disk_usage('/')
+            
             disk_total_gb = round(disk.total / (1024**3), 2)
             disk_used_gb = round(disk.used / (1024**3), 2)
+            
             print(f"  Disk Usage (Root): {disk.percent}% ({disk_used_gb}GB / {disk_total_gb}GB)")
             
             # Boot Time
             boot_time = datetime.fromtimestamp(psutil.boot_time())
+            
             print(f"  System Boot Time: {boot_time.strftime('%Y-%m-%d %H:%M:%S')}")
 
         except Exception as e:
+            
             print_status(f"Could not retrieve system metrics: {e}", "ERROR")
 
         
