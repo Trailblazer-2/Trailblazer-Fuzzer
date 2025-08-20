@@ -56,6 +56,6 @@ Trailblazer Fuzzer는 다음과 같은 강력한 기능들을 제공합니다.
 ### 2. 설치
 먼저, 저장소를 복제합니다.
 ```bash
-git clone [[https://github.com/your-username/trailblazer-fuzzer.git](https://github.com/your-username/trailblazer-fuzzer.git)](https://github.com/Trailblazer-2/Trailblazer-Fuzzer.git)
+git clone https://github.com/Trailblazer-2/Trailblazer-Fuzzer.git
 cd trailblazer-fuzzer
 ```
